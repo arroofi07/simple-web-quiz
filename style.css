@@ -373,58 +373,53 @@ body {
   color: var(--primary-color);
 }
 
-/* Result Screen */
+/* Result Screen Styles - Fixed Position */
 #result-screen {
   background: white;
   border-radius: 20px;
-  padding: 2rem;
-  text-align: center;
-  max-width: 600px;
-  width: 100%;
-  margin: 0 auto;
+  width: 90%;
+  max-width: 400px;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  overflow: hidden;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  animation: fadeIn 0.5s ease-out;
 }
 
 .result-header {
-  margin-bottom: 2rem;
+  background: linear-gradient(135deg, #4caf50, #2196f3);
+  padding: 1.5rem;
+  text-align: center;
+  color: white;
 }
 
 .result-title {
-  font-size: 2em;
-  color: var(--text-color);
-  margin-bottom: 1rem;
+  font-size: 1.5em;
   font-weight: 600;
+  margin-bottom: 0.5rem;
 }
 
 .result-score {
-  background: linear-gradient(
-    135deg,
-    var(--primary-color),
-    var(--secondary-color)
-  );
-  color: white;
-  padding: 1rem 2rem;
-  border-radius: 50px;
-  font-size: 1.5em;
-  font-weight: 600;
-  display: inline-block;
-  margin: 1rem 0;
+  font-size: 3em;
+  font-weight: bold;
+  margin: 0.5rem 0;
+}
+
+.result-content {
+  padding: 1.5rem;
 }
 
 .result-details {
-  background: #f8fafc;
-  border-radius: 15px;
-  padding: 1.5rem;
-  margin: 1.5rem 0;
+  margin-bottom: 1.5rem;
 }
 
 .result-stat {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.8rem;
-  border-bottom: 1px solid #e5e7eb;
+  padding: 0.8rem 0;
+  border-bottom: 1px solid #eee;
 }
 
 .result-stat:last-child {
@@ -432,105 +427,97 @@ body {
 }
 
 .stat-label {
-  color: #64748b;
+  color: #666;
   font-size: 0.9em;
 }
 
 .stat-value {
   font-weight: 600;
-  color: var(--text-color);
+  color: #333;
 }
 
 .result-actions {
   display: flex;
-  gap: 1rem;
-  margin-top: 2rem;
+  flex-direction: column;
+  gap: 0.8rem;
 }
 
 .result-btn {
-  flex: 1;
-  padding: 1rem;
+  width: 100%;
+  padding: 0.8rem;
+  border: none;
   border-radius: 10px;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .retry-btn {
-  background: var(--primary-color);
+  background: #4caf50;
   color: white;
 }
 
 .home-btn {
-  background: #f1f5f9;
-  color: var(--text-color);
+  background: #f5f5f5;
+  color: #333;
 }
 
-/* Responsive Design untuk Result Screen */
-@media screen and (max-width: 768px) {
-  #result-screen {
-    margin: 1rem;
-    padding: 1.5rem;
-  }
-
-  .result-title {
-    font-size: 1.5em;
-  }
-
-  .result-score {
-    font-size: 1.2em;
-    padding: 0.8rem 1.5rem;
-  }
-
-  .result-details {
-    padding: 1rem;
-  }
-
-  .result-stat {
-    padding: 0.6rem;
-  }
-
-  .result-actions {
-    flex-direction: column;
-    gap: 0.8rem;
-  }
-
-  .result-btn {
-    width: 100%;
-    padding: 0.8rem;
-    font-size: 1em;
-  }
-}
-
-/* Mobile Small */
+/* Mobile Responsive */
 @media screen and (max-width: 480px) {
   #result-screen {
-    margin: 0.5rem;
-    padding: 1rem;
-    border-radius: 15px;
+    width: 85%;
+    margin: 0 auto;
+  }
+
+  .result-header {
+    padding: 1.2rem;
   }
 
   .result-title {
     font-size: 1.3em;
-    line-height: 1.3;
   }
 
   .result-score {
-    font-size: 1.1em;
-    padding: 0.6rem 1.2rem;
-    margin: 0.8rem 0;
+    font-size: 2.5em;
   }
 
-  .result-details {
-    padding: 0.8rem;
-    margin: 1rem 0;
+  .result-content {
+    padding: 1.2rem;
   }
 
-  .stat-label {
-    font-size: 0.8em;
+  .result-stat {
+    padding: 0.6rem 0;
   }
 
+  .stat-label,
   .stat-value {
     font-size: 0.9em;
+  }
+
+  .result-btn {
+    padding: 0.7rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* Extra Small Devices */
+@media screen and (max-width: 320px) {
+  #result-screen {
+    width: 90%;
+  }
+
+  .result-title {
+    font-size: 1.2em;
+  }
+
+  .result-score {
+    font-size: 2.2em;
+  }
+
+  .stat-label,
+  .stat-value {
+    font-size: 0.85em;
   }
 }
 
@@ -540,45 +527,6 @@ body {
     padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
   }
-}
-
-/* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-  #result-screen {
-    background: #1a1a1a;
-  }
-
-  .result-details {
-    background: #2d2d2d;
-  }
-
-  .result-stat {
-    border-color: #404040;
-  }
-
-  .home-btn {
-    background: #2d2d2d;
-  }
-}
-
-/* Buttons */
-button {
-  background: var(--primary-color);
-  color: white;
-  padding: 1rem 2rem;
-  border: none;
-  border-radius: 10px;
-  font-size: 1.1em;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  width: 100%;
-  margin-top: 1rem;
-}
-
-button:hover {
-  background: #45a049;
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
 }
 
 /* Messages */
@@ -1690,4 +1638,32 @@ button:hover {
     color: #666;
     line-height: 1.4;
   }
+}
+
+/* Reset container style khusus untuk result screen */
+body:has(#result-screen:not([style*="display: none"])) .container {
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+
+/* atau alternatif jika :has belum support di semua browser */
+.container.result-active {
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+/* Result Screen Styles */
+#result-screen {
+  background: white;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 400px;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }

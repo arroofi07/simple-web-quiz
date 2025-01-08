@@ -795,3 +795,53 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+// Fungsi untuk testing result screen
+function showTestResult() {
+  // Sembunyikan screen lain
+  document.getElementById("welcome-screen").style.display = "none";
+  document.getElementById("quiz-screen").style.display = "none";
+
+  // Tambahkan class untuk container
+  document.querySelector(".container").classList.add("result-active");
+
+  // Tampilkan result screen
+  const resultScreen = document.getElementById("result-screen");
+  resultScreen.style.display = "block";
+
+  // Isi dengan data test
+  resultScreen.innerHTML = `
+        <div class="result-header">
+            <h2 class="result-title">Quiz Selesai!</h2>
+            <div class="result-score">80</div>
+        </div>
+        <div class="result-content">
+            <div class="result-details">
+                <div class="result-stat">
+                    <span class="stat-label">Jawaban Benar</span>
+                    <span class="stat-value">8/10</span>
+                </div>
+                <div class="result-stat">
+                    <span class="stat-label">Waktu</span>
+                    <span class="stat-value">1:30</span>
+                </div>
+                <div class="result-stat">
+                    <span class="stat-label">Akurasi</span>
+                    <span class="stat-value">80%</span>
+                </div>
+            </div>
+            <div class="result-actions">
+                <button class="result-btn retry-btn" onclick="startQuiz()">Main Lagi</button>
+                <button class="result-btn home-btn" onclick="goToHome()">Kembali ke Home</button>
+            </div>
+        </div>
+    `;
+}
+
+// Fungsi untuk kembali ke home
+function goToHome() {
+  document.getElementById("result-screen").style.display = "none";
+  document.getElementById("welcome-screen").style.display = "block";
+  // Hapus class result-active
+  document.querySelector(".container").classList.remove("result-active");
+}
