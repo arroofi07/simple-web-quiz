@@ -12,71 +12,71 @@
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 
-<body ">
+<body>
   <div class=" container">
-  <!-- Welcome Screen -->
-  <div id="welcome-screen">
-    <div class="welcome-header">
-      <h1 class="welcome-title">Selamat Datang di Quiz Game</h1>
-      <p class="welcome-subtitle">Uji pengetahuanmu dan dapatkan skor tertinggi!</p>
-    </div>
-
-    <div class="welcome-content">
-      <div class="welcome-form">
-        <div class="input-group">
-          <input type="text" id="player-name" placeholder=" ">
-          <label class="input-label">Masukkan Nama Anda</label>
-        </div>
-        <button class="start-btn" onclick="startQuiz()">Mulai Quiz</button>
+    <!-- Welcome Screen -->
+    <div id="welcome-screen">
+      <div class="welcome-header">
+        <h1 class="welcome-title">Selamat Datang di Quiz Game</h1>
+        <p class="welcome-subtitle">Uji pengetahuanmu dan dapatkan skor tertinggi!</p>
       </div>
 
-      <div class="welcome-features">
-        <div class="feature-item">
-          <div class="feature-icon">🎯</div>
-          <h3 class="feature-title">Multiple Choice</h3>
-          <p class="feature-desc">Jawab pertanyaan pilihan ganda dengan cermat</p>
+      <div class="welcome-content">
+        <div class="welcome-form">
+          <div class="input-group">
+            <input type="text" id="player-name" placeholder=" ">
+            <label class="input-label">Masukkan Nama Anda</label>
+          </div>
+          <button class="start-btn" onclick="startQuiz()">Mulai Quiz</button>
         </div>
-        <div class="feature-item">
-          <div class="feature-icon">⏱️</div>
-          <h3 class="feature-title">Timer</h3>
-          <p class="feature-desc">Selesaikan quiz dalam waktu yang ditentukan</p>
-        </div>
-        <div class="feature-item clickable" onclick="showLeaderboard()">
-          <div class="feature-icon">🏆</div>
-          <h3 class="feature-title">Papan Peringkat</h3>
-          <p class="feature-desc">Lihat peringkat tertinggi dan kalahkan rekor</p>
+
+        <div class="welcome-features">
+          <div class="feature-item">
+            <div class="feature-icon">🎯</div>
+            <h3 class="feature-title">Multiple Choice</h3>
+            <p class="feature-desc">Jawab pertanyaan pilihan ganda dengan cermat</p>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">⏱️</div>
+            <h3 class="feature-title">Timer</h3>
+            <p class="feature-desc">Selesaikan quiz dalam waktu yang ditentukan</p>
+          </div>
+          <div class="feature-item clickable" onclick="showLeaderboard()">
+            <div class="feature-icon">🏆</div>
+            <h3 class="feature-title">Papan Peringkat</h3>
+            <p class="feature-desc">Lihat peringkat tertinggi dan kalahkan rekor</p>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Quiz Screen -->
-  <div id="quiz-screen" style="display: none;">
-    <div class="quiz-progress">
-      <div class="progress-info">
-        <span class="question-counter">Soal <span id="current-number">1</span> dari <span
-            id="total-questions"></span></span>
-        <span class="score-counter">Skor: <span id="current-score">0</span></span>
+    <!-- Quiz Screen -->
+    <div id="quiz-screen" style="display: none;">
+      <div class="quiz-progress">
+        <div class="progress-info">
+          <span class="question-counter">Soal <span id="current-number">1</span> dari <span
+              id="total-questions"></span></span>
+          <span class="score-counter">Skor: <span id="current-score">0</span></span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill"></div>
+        </div>
       </div>
-      <div class="progress-bar">
-        <div class="progress-fill"></div>
+      <h2 id="question"></h2>
+      <div id="choices" style="color: black;"></div>
+      <div class="timer-container">
+        Waktu: <span id="timer">2:00</span>
       </div>
-    </div>
-    <h2 id="question"></h2>
-    <div id="choices" style="color: black;"></div>
-    <div class="timer-container">
-      Waktu: <span id="timer">2:00</span>
+
     </div>
 
-  </div>
-
-  <!-- Result Screen -->
-  <div id="result-screen" style="display: none;">
-    <h2>Hasil Quiz</h2>
-    <p>Nama: <span id="final-name"></span></p>
-    <p>Skor: <span id="final-score"></span></p>
-    <button onclick="restartQuiz()">Main Lagi</button>
-  </div>
+    <!-- Result Screen -->
+    <div id="result-screen" style="display: none;">
+      <h2>Hasil Quiz</h2>
+      <p>Nama: <span id="final-name"></span></p>
+      <p>Skor: <span id="final-score"></span></p>
+      <button onclick="restartQuiz()">Main Lagi</button>
+    </div>
   </div>
 
 

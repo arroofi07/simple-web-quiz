@@ -375,20 +375,190 @@ body {
 
 /* Result Screen */
 #result-screen {
-  animation: fadeIn 0.5s ease-in-out;
+  background: white;
+  border-radius: 20px;
+  padding: 2rem;
+  text-align: center;
+  max-width: 600px;
+  width: 100%;
+  margin: 0 auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.5s ease-out;
 }
 
-#result-screen h2 {
-  color: var(--text-color);
+.result-header {
   margin-bottom: 2rem;
-  font-size: 2em;
 }
 
-#final-name,
-#final-score {
-  color: var(--primary-color);
-  font-weight: bold;
-  font-size: 1.2em;
+.result-title {
+  font-size: 2em;
+  color: var(--text-color);
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.result-score {
+  background: linear-gradient(
+    135deg,
+    var(--primary-color),
+    var(--secondary-color)
+  );
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 50px;
+  font-size: 1.5em;
+  font-weight: 600;
+  display: inline-block;
+  margin: 1rem 0;
+}
+
+.result-details {
+  background: #f8fafc;
+  border-radius: 15px;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+}
+
+.result-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.8rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.result-stat:last-child {
+  border-bottom: none;
+}
+
+.stat-label {
+  color: #64748b;
+  font-size: 0.9em;
+}
+
+.stat-value {
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.result-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.result-btn {
+  flex: 1;
+  padding: 1rem;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.retry-btn {
+  background: var(--primary-color);
+  color: white;
+}
+
+.home-btn {
+  background: #f1f5f9;
+  color: var(--text-color);
+}
+
+/* Responsive Design untuk Result Screen */
+@media screen and (max-width: 768px) {
+  #result-screen {
+    margin: 1rem;
+    padding: 1.5rem;
+  }
+
+  .result-title {
+    font-size: 1.5em;
+  }
+
+  .result-score {
+    font-size: 1.2em;
+    padding: 0.8rem 1.5rem;
+  }
+
+  .result-details {
+    padding: 1rem;
+  }
+
+  .result-stat {
+    padding: 0.6rem;
+  }
+
+  .result-actions {
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .result-btn {
+    width: 100%;
+    padding: 0.8rem;
+    font-size: 1em;
+  }
+}
+
+/* Mobile Small */
+@media screen and (max-width: 480px) {
+  #result-screen {
+    margin: 0.5rem;
+    padding: 1rem;
+    border-radius: 15px;
+  }
+
+  .result-title {
+    font-size: 1.3em;
+    line-height: 1.3;
+  }
+
+  .result-score {
+    font-size: 1.1em;
+    padding: 0.6rem 1.2rem;
+    margin: 0.8rem 0;
+  }
+
+  .result-details {
+    padding: 0.8rem;
+    margin: 1rem 0;
+  }
+
+  .stat-label {
+    font-size: 0.8em;
+  }
+
+  .stat-value {
+    font-size: 0.9em;
+  }
+}
+
+/* Fix untuk iPhone notch */
+@supports (padding: env(safe-area-inset-top)) {
+  #result-screen {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  #result-screen {
+    background: #1a1a1a;
+  }
+
+  .result-details {
+    background: #2d2d2d;
+  }
+
+  .result-stat {
+    border-color: #404040;
+  }
+
+  .home-btn {
+    background: #2d2d2d;
+  }
 }
 
 /* Buttons */
