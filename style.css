@@ -1815,3 +1815,67 @@ body:has(#result-screen:not([style*="display: none"])) .container {
     width: 100%;
   }
 }
+
+/* Style untuk tombol mute */
+.mute-button {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  border: none;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.mute-button:hover {
+  transform: scale(1.1);
+  background: var(--primary-color-dark);
+}
+
+.mute-button:active {
+  transform: scale(0.95);
+}
+
+/* Animasi untuk tombol mute */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Ketika audio dimute */
+.mute-button.muted {
+  background-color: #e74c3c;
+}
+
+/* Sembunyikan elemen audio default */
+audio {
+  display: none;
+}
+
+/* Media query untuk responsivitas */
+@media (max-width: 768px) {
+  .mute-button {
+    top: 10px;
+    right: 10px;
+    width: 35px;
+    height: 35px;
+    font-size: 16px;
+  }
+}

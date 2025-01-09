@@ -15,23 +15,28 @@ window._supabase = window.supabase.createClient(
 // Fungsi untuk mengecek nama di database
 async function checkExistingPlayer(name) {
   try {
+    console.log("Checking for player:", name);
     const { data, error } = await window._supabase
       .from("scores")
       .select("*")
       .eq("name", name)
       .single();
 
-    console.log("Check player result:", { data, error }); // Debug log
-
-    if (error && error.code !== "PGRST116") {
+    if (error) {
+      if (error.code === "PGRST116") {
+        // PGRST116 means no rows returned, which is fine
+        console.log("No existing player found");
+        return null;
+      }
       console.error("Error checking player:", error);
-      return null;
+      throw error;
     }
 
+    console.log("Found existing player:", data);
     return data;
   } catch (error) {
-    console.error("Error:", error);
-    return null;
+    console.error("Error in checkExistingPlayer:", error);
+    throw error;
   }
 }
 
@@ -116,8 +121,13 @@ function closeCustomAlert() {
   }
 }
 
+document.addEventListener("DOMContentLoaded", () => {
+  Sound.init();
+});
+
 // Fungsi untuk memulai quiz
 window.startQuiz = async function () {
+  Sound.playClick();
   const inputName = document.getElementById("player-name").value;
 
   if (!inputName) {
@@ -175,38 +185,41 @@ function loadQuestion() {
     return;
   }
 
-  updateProgress();
+  // Reset timer warning class
+  const timerDisplay = document.getElementById("timer");
+  timerDisplay.classList.remove("timer-warning");
 
+  // Update progress
+  document.getElementById("current-number").textContent =
+    window.currentQuestion + 1;
+
+  // Load question
   const question = questions[window.currentQuestion];
   document.getElementById("question").textContent = question.question;
 
-  const choicesDiv = document.getElementById("choices");
-  choicesDiv.innerHTML = "";
+  // Load choices
+  const choicesContainer = document.getElementById("choices");
+  choicesContainer.innerHTML = question.choices
+    .map(
+      (choice, index) => `
+      <button class="choice-btn" onclick="checkAnswer(${index})">
+        ${choice}
+      </button>
+    `
+    )
+    .join("");
 
-  question.choices.forEach((choice, index) => {
-    const button = document.createElement("button");
-    button.className = "choice-btn";
-    button.textContent = choice;
+  // Start new timer for this question
+  startTimer();
 
-    button.addEventListener("click", () => {
-      document.querySelectorAll(".choice-btn").forEach((btn) => {
-        btn.classList.remove("selected");
-      });
-
-      button.classList.add("selected");
-
-      setTimeout(() => {
-        checkAnswer(index);
-      }, 300);
-    });
-
-    choicesDiv.appendChild(button);
-  });
+  // Update progress bar
+  updateProgress();
 }
 
 function checkAnswer(selectedIndex) {
   const question = questions[window.currentQuestion];
   if (selectedIndex === question.correct) {
+    Sound.playCorrect();
     window.score += 10;
     showMessage("Jawaban kamu benar!", "success");
     setTimeout(() => {
@@ -214,7 +227,7 @@ function checkAnswer(selectedIndex) {
       loadQuestion();
     }, 2300);
   } else {
-    // Cek apakah ini percobaan pertama untuk pertanyaan ini
+    Sound.playWrong();
     if (!window.retryAttempts[window.currentQuestion]) {
       window.retryAttempts[window.currentQuestion] = 1;
       showMessage("Jawaban salah! Mari belajar dulu!", "error");
@@ -222,7 +235,6 @@ function checkAnswer(selectedIndex) {
         showMaterial();
       }, 2300);
     } else {
-      // Ini percobaan kedua, langsung ke pertanyaan berikutnya
       showMessage(
         "Maaf, jawaban masih salah. Lanjut ke pertanyaan berikutnya.",
         "error"
@@ -236,78 +248,55 @@ function checkAnswer(selectedIndex) {
 }
 
 async function endQuiz() {
+  Sound.stopBackground();
   if (window.timer) clearInterval(window.timer);
 
   try {
-    const existingPlayer = await checkExistingPlayer(window.playerName);
-    console.log("Existing player:", existingPlayer); // Debug log
+    // Cek apakah pemain sudah ada
+    const { data: existingPlayer, error: checkError } = await window._supabase
+      .from("scores")
+      .select("*")
+      .eq("name", window.playerName)
+      .single();
+
+    console.log("Existing player:", existingPlayer);
+    console.log("New score:", window.score);
 
     if (existingPlayer) {
-      console.log(
-        "Current score:",
-        window.score,
-        "Existing score:",
-        existingPlayer.score
-      ); // Debug log
+      // Update score tanpa memeriksa apakah lebih tinggi atau tidak
+      const { error: updateError } = await window._supabase
+        .from("scores")
+        .update({
+          score: window.score,
+          created_at: new Date().toISOString(),
+        })
+        .eq("id", existingPlayer.id);
 
-      if (window.score > existingPlayer.score) {
-        // Update score jika lebih tinggi
-        const { data, error } = await window._supabase
-          .from("scores")
-          .update({ score: window.score })
-          .eq("name", window.playerName)
-          .select();
-
-        console.log("Update result:", { data, error }); // Debug log
-
-        if (error) {
-          console.error("Error updating score:", error);
-          showCustomAlert({
-            title: "Error",
-            message: "Gagal mengupdate score: " + error.message,
-            type: "error",
-          });
-          return;
-        }
-
-        showMessage(
-          "Score baru lebih tinggi! Score berhasil diupdate! 🎉",
-          "success"
-        );
-      } else {
-        showMessage(
-          `Score sebelumnya (${existingPlayer.score}) lebih tinggi!`,
-          "info"
-        );
+      if (updateError) {
+        throw updateError;
       }
+
+      showMessage(`Score baru berhasil disimpan: ${window.score}`, "success");
     } else {
-      // Insert player baru
-      const { data, error } = await window._supabase
+      // Jika pemain baru, insert data baru
+      const { error: insertError } = await window._supabase
         .from("scores")
         .insert([
           {
             name: window.playerName,
             score: window.score,
+            created_at: new Date().toISOString(),
           },
-        ])
-        .select();
+        ]);
 
-      console.log("Insert result:", { data, error }); // Debug log
-
-      if (error) {
-        console.error("Error inserting new score:", error);
-        showCustomAlert({
-          title: "Error",
-          message: "Gagal menyimpan score: " + error.message,
-          type: "error",
-        });
-        return;
+      if (insertError) {
+        throw insertError;
       }
 
-      showMessage("Score berhasil disimpan! 🎉", "success");
+      showMessage("Score berhasil disimpan!", "success");
     }
 
-    // Tampilkan hasil quiz
+    // Update tampilan hasil
     document.getElementById("quiz-screen").style.display = "none";
     document.getElementById("result-screen").style.display = "block";
     document.getElementById("final-name").textContent = window.playerName;
@@ -316,7 +305,7 @@ async function endQuiz() {
     console.error("Error in endQuiz:", error);
     showCustomAlert({
       title: "Error",
-      message: "Terjadi kesalahan saat menyelesaikan quiz: " + error.message,
+      message: "Gagal menyimpan score: " + error.message,
       type: "error",
     });
   }
@@ -401,104 +390,52 @@ function checkChallenge() {
   }
 }
 
-function showMessage(message, type) {
-  // Hapus popup yang sudah ada jika masih ada
-  const existingPopup = document.querySelector(".popup-notification");
-  const existingOverlay = document.querySelector(".popup-overlay");
-  if (existingPopup) existingPopup.remove();
-  if (existingOverlay) existingOverlay.remove();
-
-  // Buat overlay
-  const overlay = document.createElement("div");
-  overlay.className = "popup-overlay";
-  document.body.appendChild(overlay);
-
-  // Buat popup
-  const popup = document.createElement("div");
-  popup.className = "popup-notification";
-
-  // Set konten berdasarkan type
-  const icons = {
-    success: "🎉",
-    error: "❌",
-    info: "ℹ️",
-  };
-
-  const titles = {
-    success: "Benar!",
-    error: "Oops!",
-    info: "Info",
-  };
-
-  const scoreDisplay =
-    type === "success" ? `<div class="popup-score">+10 Poin</div>` : "";
-
-  popup.innerHTML = `
-    <div class="popup-icon">${icons[type] || icons.info}</div>
-    <h3 class="popup-title">${titles[type] || titles.info}</h3>
-    <p class="popup-message">${message}</p>
-    ${scoreDisplay}
-  `;
-
-  document.body.appendChild(popup);
-
-  // Tampilkan popup dengan animasi
-  requestAnimationFrame(() => {
-    overlay.classList.add("show");
-    popup.classList.add("show");
+function showMessage(message, type = "info") {
+  showCustomAlert({
+    title: type === "success" ? "Berhasil!" : "Informasi",
+    message: message,
+    type: type,
   });
-
-  // Hilangkan popup setelah beberapa detik
-  setTimeout(() => {
-    overlay.classList.remove("show");
-    popup.classList.remove("show");
-
-    setTimeout(() => {
-      overlay.remove();
-      popup.remove();
-    }, 300);
-  }, 2000);
 }
 
 function startTimer() {
-  let timeLeft = 15 * 60; // 15 menit dalam detik (15 * 60 = 900 detik)
+  let timeLeft = 30; // 30 detik per soal
   const timerDisplay = document.getElementById("timer");
+
+  // Clear timer sebelumnya jika ada
+  if (window.timer) clearInterval(window.timer);
 
   window.timer = setInterval(() => {
     timeLeft--;
 
-    // Konversi ke format menit:detik
-    const minutes = Math.floor(timeLeft / 60);
-    const seconds = timeLeft % 60;
+    // Format tampilan timer
+    timerDisplay.textContent =
+      timeLeft < 10 ? `0:0${timeLeft}` : `0:${timeLeft}`;
 
-    // Format tampilan dengan leading zero jika perlu
-    timerDisplay.textContent = `${minutes}:${
-      seconds < 10 ? "0" : ""
-    }${seconds}`;
+    // Tambahkan class warning ketika waktu hampir habis (10 detik terakhir)
+    if (timeLeft <= 10) {
+      timerDisplay.classList.add("timer-warning");
+    }
 
     // Jika waktu habis
     if (timeLeft <= 0) {
       clearInterval(window.timer);
       showCustomAlert({
         title: "Waktu Habis!",
-        message: "Waktu mengerjakan quiz telah habis!",
+        message: "Waktumu untuk soal ini telah habis!",
         type: "warning",
         buttons: [
           {
-            text: "Lihat Hasil",
+            text: "Lanjut",
             type: "primary",
             onClick: () => {
               closeCustomAlert();
-              endQuiz();
+              window.currentQuestion++;
+              loadQuestion();
             },
           },
         ],
       });
-    }
-
-    // Tambahkan warning ketika waktu hampir habis (1 menit terakhir)
-    if (timeLeft === 60) {
-      showMessage("Tersisa 1 menit!", "warning");
     }
   }, 1000);
 }
@@ -605,27 +542,39 @@ function resetGame() {
 
 // Fungsi untuk restart quiz
 function restartQuiz() {
-  const playAgain = confirm("Apakah Anda ingin bermain lagi?");
-  if (playAgain) {
-    resetGame();
-  }
+  window.currentQuestion = 0;
+  window.score = 0;
+  document.getElementById("result-screen").style.display = "none";
+  document.getElementById("welcome-screen").style.display = "block";
+  document.getElementById("player-name").value = "";
 }
 
 // Fungsi untuk memulai game setelah konfirmasi
 function startGame() {
+  Sound.playClick();
+  const inputName = document.getElementById("player-name").value;
+  if (!inputName) {
+    showCustomAlert({
+      title: "Error",
+      message: "Nama tidak boleh kosong!",
+      type: "error",
+    });
+    return;
+  }
+
+  window.playerName = inputName;
   window.currentQuestion = 0;
   window.score = 0;
-  window.challengePoints = 0;
-  window.retryAttempts = {}; // Reset retry attempts
+  window.retryAttempts = {};
 
   document.getElementById("welcome-screen").style.display = "none";
   document.getElementById("quiz-screen").style.display = "block";
 
-  // Set total questions di awal
   document.getElementById("total-questions").textContent = questions.length;
 
   loadQuestion();
   startTimer();
+  Sound.startBackground();
 }
 
 // Tambahkan fungsi untuk handling klik pada feature item

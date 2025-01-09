@@ -13,6 +13,18 @@
 </head>
 
 <body>
+  <audio id="buttonClick" preload="auto">
+    <source src="click.mp3" type="audio/mp3">
+  </audio>
+  <audio id="correctAnswer" preload="auto">
+    <source src="correct.mp3" type="audio/mp3">
+  </audio>
+  <audio id="wrongAnswer" preload="auto">
+    <source src="wrong.mp3" type="audio/mp3">
+  </audio>
+  <audio id="bgMusic" loop>
+    <source src="background.mp3" type="audio/mp3">
+  </audio>
   <div class=" container">
     <!-- Welcome Screen -->
     <div id="welcome-screen">
@@ -121,6 +133,7 @@
 
 
   <script src="questions.js"></script>
+  <script src="sound.js"></script>
   <script src="script.js"></script>
 </body>
 
