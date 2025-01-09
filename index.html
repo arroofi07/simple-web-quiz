@@ -67,15 +67,54 @@
       <div class="timer-container">
         Waktu: <span id="timer">2:00</span>
       </div>
+    </div>
 
+    <!-- Material Screen (Tambahkan ini) -->
+    <div id="material-screen" style="display: none;">
+      <div class="material-header" style="margin-top: 10px;">
+        <!-- <h2>Mari Belajar!</h2> -->
+        <div class="timer-container">
+          Waktu Belajar: <span id="material-timer">2:00</span>
+        </div>
+      </div>
+      <div class="material-content">
+        <!-- Konten materi akan diisi melalui JavaScript -->
+      </div>
     </div>
 
     <!-- Result Screen -->
     <div id="result-screen" style="display: none;">
-      <h2>Hasil Quiz</h2>
-      <p>Nama: <span id="final-name"></span></p>
-      <p>Skor: <span id="final-score"></span></p>
-      <button onclick="restartQuiz()">Main Lagi</button>
+      <div class="result-header">
+        <h2>Hasil Quiz</h2>
+        <p>Selamat! Kamu telah menyelesaikan quiz</p>
+      </div>
+
+      <div class="result-content">
+        <div class="result-info">
+          <p>
+            <span>📝 Nama:</span>
+            <span id="final-name"></span>
+          </p>
+        </div>
+
+        <div class="result-score">
+          <span id="final-score"></span>
+          <span>/100</span>
+        </div>
+
+        <p class="result-message">
+          Bagus sekali! Terus tingkatkan pengetahuanmu!
+        </p>
+      </div>
+
+      <div class="result-buttons">
+        <button onclick="restartQuiz()" class="result-btn restart-btn">
+          Main Lagi
+        </button>
+        <button onclick="goToHome()" class="result-btn home-btn">
+          Kembali ke Beranda
+        </button>
+      </div>
     </div>
   </div>
 

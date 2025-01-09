@@ -4,6 +4,7 @@ window.score = 0;
 window.timer = null;
 window.playerName = "";
 window.challengePoints = 0;
+window.retryAttempts = {};
 
 // Inisialisasi Supabase dengan createClient dari window.supabase
 window._supabase = window.supabase.createClient(
@@ -19,6 +20,8 @@ async function checkExistingPlayer(name) {
       .select("*")
       .eq("name", name)
       .single();
+
+    console.log("Check player result:", { data, error }); // Debug log
 
     if (error && error.code !== "PGRST116") {
       console.error("Error checking player:", error);
@@ -114,7 +117,7 @@ function closeCustomAlert() {
 }
 
 // Fungsi untuk memulai quiz
-async function startQuiz() {
+window.startQuiz = async function () {
   const inputName = document.getElementById("player-name").value;
 
   if (!inputName) {
@@ -155,7 +158,7 @@ async function startQuiz() {
   }
 
   startGame();
-}
+};
 
 function updateProgress() {
   const progress = (window.currentQuestion / questions.length) * 100;
@@ -209,15 +212,26 @@ function checkAnswer(selectedIndex) {
     setTimeout(() => {
       window.currentQuestion++;
       loadQuestion();
-    }, 2300); // Tunggu popup hilang
+    }, 2300);
   } else {
-    showMessage(
-      "Jawaban salah! Selesaikan tantangan untuk mendapatkan point!",
-      "error"
-    );
-    setTimeout(() => {
-      showChallenge();
-    }, 2300); // Tunggu popup hilang
+    // Cek apakah ini percobaan pertama untuk pertanyaan ini
+    if (!window.retryAttempts[window.currentQuestion]) {
+      window.retryAttempts[window.currentQuestion] = 1;
+      showMessage("Jawaban salah! Mari belajar dulu!", "error");
+      setTimeout(() => {
+        showMaterial();
+      }, 2300);
+    } else {
+      // Ini percobaan kedua, langsung ke pertanyaan berikutnya
+      showMessage(
+        "Maaf, jawaban masih salah. Lanjut ke pertanyaan berikutnya.",
+        "error"
+      );
+      setTimeout(() => {
+        window.currentQuestion++;
+        loadQuestion();
+      }, 2300);
+    }
   }
 }
 
@@ -226,15 +240,36 @@ async function endQuiz() {
 
   try {
     const existingPlayer = await checkExistingPlayer(window.playerName);
+    console.log("Existing player:", existingPlayer); // Debug log
 
     if (existingPlayer) {
+      console.log(
+        "Current score:",
+        window.score,
+        "Existing score:",
+        existingPlayer.score
+      ); // Debug log
+
       if (window.score > existingPlayer.score) {
-        const { error } = await window._supabase
+        // Update score jika lebih tinggi
+        const { data, error } = await window._supabase
           .from("scores")
           .update({ score: window.score })
-          .eq("name", window.playerName);
+          .eq("name", window.playerName)
+          .select();
 
-        if (error) throw error;
+        console.log("Update result:", { data, error }); // Debug log
+
+        if (error) {
+          console.error("Error updating score:", error);
+          showCustomAlert({
+            title: "Error",
+            message: "Gagal mengupdate score: " + error.message,
+            type: "error",
+          });
+          return;
+        }
+
         showMessage(
           "Score baru lebih tinggi! Score berhasil diupdate! 🎉",
           "success"
@@ -246,20 +281,45 @@ async function endQuiz() {
         );
       }
     } else {
-      const { error } = await window._supabase
+      // Insert player baru
+      const { data, error } = await window._supabase
         .from("scores")
-        .insert([{ name: window.playerName, score: window.score }]);
+        .insert([
+          {
+            name: window.playerName,
+            score: window.score,
+          },
+        ])
+        .select();
 
-      if (error) throw error;
+      console.log("Insert result:", { data, error }); // Debug log
+
+      if (error) {
+        console.error("Error inserting new score:", error);
+        showCustomAlert({
+          title: "Error",
+          message: "Gagal menyimpan score: " + error.message,
+          type: "error",
+        });
+        return;
+      }
+
+      showMessage("Score berhasil disimpan! 🎉", "success");
     }
-  } catch (error) {
-    console.error("Error saving score:", error);
-  }
 
-  document.getElementById("quiz-screen").style.display = "none";
-  document.getElementById("result-screen").style.display = "block";
-  document.getElementById("final-name").textContent = window.playerName;
-  document.getElementById("final-score").textContent = window.score;
+    // Tampilkan hasil quiz
+    document.getElementById("quiz-screen").style.display = "none";
+    document.getElementById("result-screen").style.display = "block";
+    document.getElementById("final-name").textContent = window.playerName;
+    document.getElementById("final-score").textContent = window.score;
+  } catch (error) {
+    console.error("Error in endQuiz:", error);
+    showCustomAlert({
+      title: "Error",
+      message: "Terjadi kesalahan saat menyelesaikan quiz: " + error.message,
+      type: "error",
+    });
+  }
 }
 
 function showChallenge() {
@@ -401,18 +461,17 @@ function showMessage(message, type) {
 }
 
 function startTimer() {
-  timeLeft = 120; // Reset timer untuk setiap soal
+  let timeLeft = 15 * 60; // 15 menit dalam detik (15 * 60 = 900 detik)
   const timerDisplay = document.getElementById("timer");
-
-  // Clear timer sebelumnya jika ada
-  if (window.timer) clearInterval(window.timer);
 
   window.timer = setInterval(() => {
     timeLeft--;
 
-    // Konversi detik ke format menit:detik
+    // Konversi ke format menit:detik
     const minutes = Math.floor(timeLeft / 60);
     const seconds = timeLeft % 60;
+
+    // Format tampilan dengan leading zero jika perlu
     timerDisplay.textContent = `${minutes}:${
       seconds < 10 ? "0" : ""
     }${seconds}`;
@@ -420,16 +479,26 @@ function startTimer() {
     // Jika waktu habis
     if (timeLeft <= 0) {
       clearInterval(window.timer);
-      showTimeUpMessage();
-      setTimeout(() => {
-        window.currentQuestion++;
-        if (window.currentQuestion < questions.length) {
-          loadQuestion();
-          startTimer();
-        } else {
-          endQuiz();
-        }
-      }, 2000);
+      showCustomAlert({
+        title: "Waktu Habis!",
+        message: "Waktu mengerjakan quiz telah habis!",
+        type: "warning",
+        buttons: [
+          {
+            text: "Lihat Hasil",
+            type: "primary",
+            onClick: () => {
+              closeCustomAlert();
+              endQuiz();
+            },
+          },
+        ],
+      });
+    }
+
+    // Tambahkan warning ketika waktu hampir habis (1 menit terakhir)
+    if (timeLeft === 60) {
+      showMessage("Tersisa 1 menit!", "warning");
     }
   }, 1000);
 }
@@ -547,6 +616,7 @@ function startGame() {
   window.currentQuestion = 0;
   window.score = 0;
   window.challengePoints = 0;
+  window.retryAttempts = {}; // Reset retry attempts
 
   document.getElementById("welcome-screen").style.display = "none";
   document.getElementById("quiz-screen").style.display = "block";
@@ -844,4 +914,229 @@ function goToHome() {
   document.getElementById("welcome-screen").style.display = "block";
   // Hapus class result-active
   document.querySelector(".container").classList.remove("result-active");
+}
+
+// Fungsi untuk menampilkan materi pembelajaran
+function showMaterial() {
+  // Sembunyikan layar quiz
+  document.getElementById("quiz-screen").style.display = "none";
+  document.getElementById("material-screen").style.display = "block";
+
+  // Dapatkan materi yang sesuai dengan pertanyaan saat ini
+  const material = learningMaterials[window.currentQuestion];
+
+  // Tampilkan materi dengan tombol selesai
+  document.getElementById("material-screen").innerHTML = `
+    <div class="material-header">
+      <div class="timer-container">
+        Waktu Belajar: <span id="material-timer">1:00</span>
+      </div>
+    </div>
+    <div class="material-content">
+      ${material}
+    </div>
+    <div class="material-footer">
+      <button class="finish-study-btn" onclick="finishStudying()">
+        Selesai Belajar
+      </button>
+    </div>
+  `;
+
+  // Mulai timer untuk materi
+  startMaterialTimer();
+}
+
+// Modifikasi fungsi finishStudying
+function finishStudying() {
+  // Hentikan timer sementara
+  if (window.materialTimer) {
+    clearInterval(window.materialTimer);
+  }
+
+  // Simpan sisa waktu
+  const timeLeft = getTimeLeft();
+
+  // Tampilkan konfirmasi
+  showCustomAlert({
+    title: "Konfirmasi",
+    message: "Apakah Anda yakin sudah memahami materinya?",
+    type: "info",
+    buttons: [
+      {
+        text: "Ya",
+        type: "primary",
+        onClick: () => {
+          closeCustomAlert();
+          // Sembunyikan materi
+          document.getElementById("material-screen").style.display = "none";
+          // Tampilkan kembali quiz
+          document.getElementById("quiz-screen").style.display = "block";
+          retryQuestion();
+        },
+      },
+      {
+        text: "Belajar Lagi",
+        type: "secondary",
+        onClick: () => {
+          closeCustomAlert();
+          // Lanjutkan timer dengan sisa waktu
+          resumeMaterialTimer(timeLeft);
+        },
+      },
+    ],
+  });
+}
+
+// Fungsi untuk mendapatkan sisa waktu
+function getTimeLeft() {
+  const timerText = document.getElementById("material-timer").textContent;
+  const [minutes, seconds] = timerText.split(":").map(Number);
+  return minutes * 60 + seconds;
+}
+
+// Fungsi untuk melanjutkan timer
+function resumeMaterialTimer(timeLeft) {
+  const timerDisplay = document.getElementById("material-timer");
+
+  window.materialTimer = setInterval(() => {
+    timeLeft--;
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    timerDisplay.textContent = `${minutes}:${
+      seconds < 10 ? "0" : ""
+    }${seconds}`;
+
+    if (timeLeft <= 0) {
+      clearInterval(window.materialTimer);
+      // Hapus layar materi
+      document.getElementById("material-screen").style.display = "none";
+      // Tampilkan kembali quiz
+      document.getElementById("quiz-screen").style.display = "block";
+      retryQuestion();
+    }
+  }, 1000);
+}
+
+// Modifikasi fungsi startMaterialTimer
+function startMaterialTimer() {
+  let timeLeft = 60; // 1 menit
+  resumeMaterialTimer(timeLeft);
+}
+
+// Tambahkan CSS untuk tombol selesai
+const materialButtonStyle = document.createElement("style");
+materialButtonStyle.textContent = `
+  .material-footer {
+    text-align: center;
+    margin-top: 20px;
+    padding: 20px;
+  }
+
+  .finish-study-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  .finish-study-btn:hover {
+    background-color: var(--primary-color-dark);
+  }
+`;
+document.head.appendChild(materialButtonStyle);
+
+// Array materi pembelajaran sesuai dengan urutan pertanyaan
+const learningMaterials = [
+  `<div class="material-section">
+    <h3>Pengertian Keberagaman</h3>
+    <p>Keragaman budaya adalah keunikan yang ada di muka bumi belahan dunia dengan banyaknya berbagai macam suku bangsa yang ada di dunia, begitu juga dengan keragaman budaya khususnya di Indonesia.</p>
+    <p>Tidak dapat dipungkiri keberadaannya sendiri sehingga menghasilkan kebudayaan yang berbeda dari setiap suku bangsa khususnya di Indonesia yang berbeda dari hasil kemampuan menciptakan kebudayaannya sendiri.</p>
+  </div>`,
+  `<div class="material-section">
+    <h3>Tarian Tradisional Jambi</h3>
+    <p>Tari Sekapur Sirih adalah tarian penyambutan tamu terhormat di Jambi.</p>
+    <p>Ditarikan oleh 9 penari perempuan dan 3 penari laki-laki.</p>
+    <p>Menggunakan properti: cerano, daun sirih, payung, dan keris.</p>
+  </div>`,
+  `<div class="material-section">
+    <h3>Rumah Adat Jambi</h3>
+    <p>Kajang Leko adalah rumah adat khas Provinsi Jambi.</p>
+    <p>Memiliki makna filosofis tentang keharmonisan dengan alam.</p>
+    <p>Mencerminkan kehidupan sederhana dan hormat pada leluhur.</p>
+  </div>`,
+  `<div class="material-section">
+    <h3>Senjata Tradisional Jambi</h3>
+    <p>Keris Siginjai adalah senjata tradisional khas Provinsi Jambi.</p>
+    <p>Melambangkan kehormatan, status sosial, keberanian, kekuatan, kesetiaan, kesucian, dan kearifan lokal.</p>
+  </div>`,
+  `<div class="material-section">
+    <h3>Kuliner Khas Jambi</h3>
+    <p>Tempoyak adalah makanan khas Jambi yang terbuat dari fermentasi durian.</p>
+    <p>Populer di masyarakat Jambi dan disajikan pada acara-acara khusus.</p>
+  </div>`,
+  `<div class="material-section">
+    <h3>Tari Sekapur Sirih</h3>
+    <p>Tari Sekapur Sirih ditarikan oleh 9 penari perempuan dan 3 penari laki-laki.</p>
+    <p>Merupakan tarian penyambutan tamu kehormatan di Provinsi Jambi.</p>
+  </div>`,
+  `<div class="material-section">
+    <h3>Pelestarian Budaya</h3>
+    <p>Melarang penggunaan bahasa daerah bertentangan dengan upaya pelestarian budaya.</p>
+    <p>Pemerintah harus mendukung penggunaan dan pelestarian bahasa daerah.</p>
+  </div>`,
+  `<div class="material-section">
+    <h3>Pengertian Budaya</h3>
+    <p>Budaya mencakup semua hasil cipta, rasa, dan karsa manusia termasuk adat istiadat, tradisi, seni, dan nilai-nilai.</p>
+  </div>`,
+  `<div class="material-section">
+    <h3>Suku-suku di Jambi</h3>
+    <p>Melayu Jambi, Suku Anak Dalam, dan Kerinci adalah suku-suku yang ada di Provinsi Jambi.</p>
+    <p>Setiap suku memiliki keunikan budaya dan tradisinya masing-masing.</p>
+  </div>`,
+  `<div class="material-section">
+    <h3>Baju Adat Jambi</h3>
+    <p>Baju adat Jambi terkenal dengan sulaman benang emasnya yang indah.</p>
+    <p>Mencerminkan keanggunan dan kekayaan budaya Melayu Jambi.</p>
+  </div>`,
+];
+
+// Tambahkan CSS untuk styling materi
+const materialStyle = document.createElement("style");
+materialStyle.textContent = `
+  .material-section {
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .material-section h3 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+  }
+
+  .material-section p {
+    color: #34495e;
+    line-height: 1.6;
+    margin-bottom: 10px;
+  }
+`;
+document.head.appendChild(materialStyle);
+
+// Modifikasi fungsi retryQuestion
+function retryQuestion() {
+  showMessage("Silakan coba jawab pertanyaan ini sekali lagi!", "info");
+  loadQuestion(); // Load ulang pertanyaan yang sama
+}
+
+// Tambahkan fungsi untuk format waktu (bisa digunakan di tempat lain jika perlu)
+function formatTime(seconds) {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return `${minutes}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`;
 }

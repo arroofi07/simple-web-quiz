@@ -375,92 +375,128 @@ body {
 
 /* Result Screen Styles - Fixed Position */
 #result-screen {
-  background: white;
+  background: linear-gradient(135deg, var(--primary-color) 0%, #2c3e50 100%);
   border-radius: 20px;
-  width: 90%;
-  max-width: 400px;
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+  text-align: center;
+  max-width: 600px;
+  margin: 30px auto;
+  color: white;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
 .result-header {
-  background: linear-gradient(135deg, #4caf50, #2196f3);
-  padding: 1.5rem;
-  text-align: center;
-  color: white;
+  margin-bottom: 30px;
 }
 
-.result-title {
-  font-size: 1.5em;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
+.result-header h2 {
+  font-size: 2.5em;
+  margin-bottom: 10px;
+  color: #fff;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.result-content {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  padding: 30px;
+  margin-bottom: 30px;
+  backdrop-filter: blur(10px);
+}
+
+.result-info {
+  margin-bottom: 20px;
+}
+
+.result-info p {
+  font-size: 1.2em;
+  margin: 15px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
 
 .result-score {
   font-size: 3em;
   font-weight: bold;
-  margin: 0.5rem 0;
+  color: #ffd700;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  margin: 20px 0;
+  animation: scorePopup 0.5s ease-out;
 }
 
-.result-content {
-  padding: 1.5rem;
-}
-
-.result-details {
-  margin-bottom: 1.5rem;
-}
-
-.result-stat {
+.result-buttons {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.8rem 0;
-  border-bottom: 1px solid #eee;
-}
-
-.result-stat:last-child {
-  border-bottom: none;
-}
-
-.stat-label {
-  color: #666;
-  font-size: 0.9em;
-}
-
-.stat-value {
-  font-weight: 600;
-  color: #333;
-}
-
-.result-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 30px;
 }
 
 .result-btn {
-  width: 100%;
-  padding: 0.8rem;
+  padding: 12px 25px;
   border: none;
-  border-radius: 10px;
-  font-size: 1rem;
-  font-weight: 500;
+  border-radius: 25px;
+  font-size: 1.1em;
   cursor: pointer;
   transition: all 0.3s ease;
+  text-transform: uppercase;
+  font-weight: bold;
+  letter-spacing: 1px;
 }
 
-.retry-btn {
-  background: #4caf50;
+.restart-btn {
+  background: #2ecc71;
   color: white;
 }
 
 .home-btn {
-  background: #f5f5f5;
-  color: #333;
+  background: #e74c3c;
+  color: white;
+}
+
+.result-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Animasi untuk score */
+@keyframes scorePopup {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Tambahkan media queries untuk responsivitas */
+@media (max-width: 768px) {
+  #result-screen {
+    margin: 20px;
+    padding: 30px 20px;
+  }
+
+  .result-header h2 {
+    font-size: 2em;
+  }
+
+  .result-score {
+    font-size: 2.5em;
+  }
+
+  .result-buttons {
+    flex-direction: column;
+  }
+
+  .result-btn {
+    width: 100%;
+  }
 }
 
 /* Mobile Responsive */
@@ -1656,14 +1692,126 @@ body:has(#result-screen:not([style*="display: none"])) .container {
 
 /* Result Screen Styles */
 #result-screen {
-  background: white;
+  background: linear-gradient(135deg, var(--primary-color) 0%, #2c3e50 100%);
   border-radius: 20px;
-  width: 90%;
-  max-width: 400px;
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+  text-align: center;
+  max-width: 600px;
+  margin: 30px auto;
+  color: white;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.result-header {
+  margin-bottom: 30px;
+}
+
+.result-header h2 {
+  font-size: 2.5em;
+  margin-bottom: 10px;
+  color: #fff;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.result-content {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  padding: 30px;
+  margin-bottom: 30px;
+  backdrop-filter: blur(10px);
+}
+
+.result-info {
+  margin-bottom: 20px;
+}
+
+.result-info p {
+  font-size: 1.2em;
+  margin: 15px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.result-score {
+  font-size: 3em;
+  font-weight: bold;
+  color: #ffd700;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  margin: 20px 0;
+  animation: scorePopup 0.5s ease-out;
+}
+
+.result-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+.result-btn {
+  padding: 12px 25px;
+  border: none;
+  border-radius: 25px;
+  font-size: 1.1em;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.restart-btn {
+  background: #2ecc71;
+  color: white;
+}
+
+.home-btn {
+  background: #e74c3c;
+  color: white;
+}
+
+.result-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Animasi untuk score */
+@keyframes scorePopup {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Tambahkan media queries untuk responsivitas */
+@media (max-width: 768px) {
+  #result-screen {
+    margin: 20px;
+    padding: 30px 20px;
+  }
+
+  .result-header h2 {
+    font-size: 2em;
+  }
+
+  .result-score {
+    font-size: 2.5em;
+  }
+
+  .result-buttons {
+    flex-direction: column;
+  }
+
+  .result-btn {
+    width: 100%;
+  }
 }
