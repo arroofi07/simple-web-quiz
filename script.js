@@ -1089,3 +1089,30 @@ function formatTime(seconds) {
   const remainingSeconds = seconds % 60;
   return `${minutes}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`;
 }
+
+function addScrollButton() {
+  const scrollButton = document.createElement("button");
+  scrollButton.className = "scroll-top";
+  scrollButton.innerHTML = "↑";
+  document.body.appendChild(scrollButton);
+
+  window.addEventListener("scroll", () => {
+    if (window.pageYOffset > 300) {
+      scrollButton.classList.add("visible");
+    } else {
+      scrollButton.classList.remove("visible");
+    }
+  });
+
+  scrollButton.addEventListener("click", () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  });
+}
+
+// Panggil fungsi saat dokumen dimuat
+document.addEventListener("DOMContentLoaded", () => {
+  addScrollButton();
+});
